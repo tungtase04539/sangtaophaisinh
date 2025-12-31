@@ -1,270 +1,260 @@
-# Sáng Tạo Phái Sinh - Version 1.0
+# Sáng Tạo Phái Sinh - Project Manifest
 
 > Platform quản lý công việc localization nội dung AI từ tiếng Trung sang tiếng Việt
 
 ---
 
-## 🎯 Mục Tiêu Hệ Thống
+## 1. Tổng quan Dự án (Project Overview)
 
-### Vấn đề cần giải quyết
-- Nhiều tutorial AI chất lượng cao bằng tiếng Trung cần được Việt hóa
-- Cần quản lý workflow giữa Manager (người giao việc) và CTV (người thực hiện)
-- Đảm bảo chất lượng bản dịch và tuân thủ bản quyền
+### 1.1 Mục tiêu
+Xây dựng nền tảng "gig economy" kết nối:
+- **Manager**: Đăng công việc localization
+- **CTV**: Nhận và thực hiện công việc
+- **Admin**: Quản trị hệ thống
 
-### Giải pháp
-Platform "gig economy" cho phép:
-- **Manager** đăng công việc với giá tự động tính theo độ dài/phức tạp
-- **CTV** nhận việc theo cơ chế "grab" (ai nhanh được trước)
-- **Admin** quản lý hệ thống, users, và cấu hình
+### 1.2 Tech Stack
+
+| Layer | Technology |
+|-------|------------|
+| Frontend | Next.js 15, TypeScript, Tailwind CSS |
+| Backend | Supabase (PostgreSQL, Auth, Realtime) |
+| Deployment | Vercel + Supabase Cloud |
+
+### 1.3 Cấu trúc thư mục
+
+```
+sangtaophaisinh/
+├── frontend/src/
+│   ├── app/                    # Pages
+│   │   ├── (auth)/             # Login, Register, Agreement
+│   │   └── (dashboard)/        # Jobs, Manager, Admin, Profile
+│   ├── components/             # UI Components
+│   ├── lib/                    # Utilities, Supabase clients
+│   └── types/                  # TypeScript definitions
+├── supabase/migrations/        # SQL migrations
+├── DEPLOYMENT.md               # Hướng dẫn deploy
+└── README.md                   # File này
+```
 
 ---
 
-## ⚙️ Cơ Chế Hoạt Động
+## 2. Luồng Logic & Tính năng (Core Logic & Features)
 
-### 1. Hệ thống Rank & Credit Score
+### 2.1 Luồng CTV (Cộng tác viên)
 
-| Rank | Credit Score tối thiểu | Số việc đồng thời |
-|------|------------------------|-------------------|
+```mermaid
+flowchart TD
+    A[Đăng ký] --> B[Ký thỏa thuận]
+    B --> C{Đã xác minh?}
+    C -->|Chưa| D[Liên hệ Manager qua Zalo]
+    D --> E[Manager xác minh]
+    E --> F[Có thể nhận việc]
+    C -->|Rồi| F
+    F --> G[Xem danh sách jobs]
+    G --> H[Nhận việc - grab job]
+    H --> I[Thực hiện công việc]
+    I --> J[Nộp bài]
+    J --> K{Manager review}
+    K -->|Approve| L[Nhận tiền vào balance]
+    K -->|Reject| M[Sửa và nộp lại]
+```
+
+### 2.2 Luồng Manager (Quản lý)
+
+```mermaid
+flowchart TD
+    A[Đăng nhập] --> B[Dashboard]
+    B --> C[Tạo việc mới]
+    C --> D[Nhập thông tin + URL tài liệu]
+    D --> E[Hệ thống tính giá tự động]
+    E --> F[Đăng việc]
+    F --> G[CTV nhận và làm]
+    G --> H[CTV nộp bài]
+    H --> I[Review submission]
+    I --> J{Quyết định}
+    J -->|4 checkboxes ✓| K[Approve + Thanh toán]
+    J -->|Có vấn đề| L[Reject + Ghi lý do]
+```
+
+### 2.3 Hệ thống Pricing
+
+```
+Giá = (Số từ × 50đ × Hệ số) + (Phút video × 5,000đ × Hệ số) + Bonus
+
+Hệ số độ phức tạp:
+- Easy: 1.0x
+- Medium: 1.2x
+- Hard: 1.5x
+- Expert: 2.0x
+
+Bonus quay lại màn hình: +20%
+```
+
+### 2.4 Hệ thống Rank & Credit Score
+
+| Rank | Credit tối thiểu | Jobs đồng thời |
+|------|------------------|----------------|
 | Newbie | 0 | 1 |
 | Regular | 60 | 2 |
 | Trusted | 80 | 3 |
 | Expert | 95 | 5 |
 
-- **Tăng điểm**: Hoàn thành việc đúng hạn, được duyệt
-- **Trừ điểm**: Timeout (-10 điểm), Trả việc (-2 điểm)
+**Thay đổi điểm:**
+- Hoàn thành đúng hạn: +5
+- Timeout: -10
+- Trả việc: -2
 
-### 2. Hệ thống Pricing
+### 2.5 Safety Checkboxes (Bắt buộc khi approve)
 
-```
-Giá = (Số từ × 50đ × Hệ số) + (Phút video × 5,000đ × Hệ số) + Bonus quay lại
-```
-
-**Hệ số độ phức tạp:**
-- Easy: 1.0x
-- Medium: 1.2x  
-- Hard: 1.5x
-- Expert: 2.0x
-
-**Bonus quay lại màn hình:** +20%
-
-### 3. Deadline động
-
-```
-Deadline = 6h + (Số từ / 1000)h + (Phút video / 60)h
-```
-
-### 4. Safety Checkboxes (Bắt buộc khi duyệt)
-
-Manager phải xác nhận 4 điều kiện trước khi approve:
 1. ✅ An toàn chính trị
 2. ✅ Bản đồ đúng (Việt Nam)
 3. ✅ Là tác phẩm phái sinh
 4. ✅ Không vi phạm bản quyền
 
----
+### 2.6 Xác minh CTV (V2.0)
 
-## 🛠️ Công Nghệ Sử Dụng
-
-### Frontend
-| Công nghệ | Phiên bản | Mục đích |
-|-----------|-----------|----------|
-| Next.js | 15.x | React framework với SSR |
-| TypeScript | 5.x | Type safety |
-| Tailwind CSS | 3.x | Styling utility-first |
-| Lucide React | - | Icon library |
-
-### Backend
-| Công nghệ | Mục đích |
-|-----------|----------|
-| Supabase | Database, Auth, Realtime, RLS |
-| PostgreSQL | Cơ sở dữ liệu |
-| PL/pgSQL | Stored procedures (lock_job, release_job) |
-| pg_cron | Scheduled jobs (timeout handler) |
-
-### Deployment
-| Service | Mục đích |
-|---------|----------|
-| Vercel | Frontend hosting, CI/CD |
-| Supabase Cloud | Database hosting |
+- CTV mới cần liên hệ Manager qua Zalo
+- Manager vào `/manager/verify` để xác minh
+- CTV chưa xác minh không thể nhận việc
 
 ---
 
-## 👤 Luồng Task: ADMIN
+## 3. Thư viện Prompt (Prompt Engineering Vault)
 
-### Đăng nhập
-1. Truy cập `/login`
-2. Nhập email/password của tài khoản admin
+### 3.1 Tạo Job (Manager)
 
-### Dashboard (`/admin`)
-- Xem thống kê tổng quan:
-  - Tổng số users, CTVs
-  - Tổng số jobs, jobs pending
-  - Tổng số tiền đã thanh toán
+**Input fields:**
+- `title`: Tiêu đề công việc
+- `source_url`: URL tài liệu gốc
+- `word_count`: Số từ cần dịch
+- `video_duration_minutes`: Thời lượng video
+- `complexity`: easy | medium | hard | expert
+- `is_re_record_required`: Có cần quay lại không
+- `ai_tools_used`: ChatGPT, Claude, Midjourney, etc.
+- `notes`: Ghi chú cho CTV
 
-### Quản lý Users (`/admin/users`)
-1. Xem danh sách tất cả users
-2. Kiểm tra role, rank, credit score, số dư
-3. Xem trạng thái ký thỏa thuận
+### 3.2 Submit Job (CTV)
 
-### Cấu hình Hệ thống (`/admin/config`)
-1. Chỉnh sửa giá tiền:
-   - Giá per word
-   - Giá per minute
-   - Bonus quay lại
-2. Chỉnh rank limits:
-   - Số job tối đa mỗi rank
-   - Điểm credit tối thiểu
+**Required:**
+- `video_url`: Link video đã làm
+- `confirm_derivative`: Xác nhận tác phẩm phái sinh
+- `confirm_no_copyright`: Xác nhận không vi phạm bản quyền
 
----
+**Optional:**
+- `drive_link`: Link Google Drive
+- `notes`: Ghi chú
 
-## 👔 Luồng Task: MANAGER (Quản lý)
+### 3.3 Review Job (Manager)
 
-### Đăng nhập
-1. Truy cập `/login`
-2. Nhập email/password của tài khoản manager
+**Safety checks (tất cả bắt buộc):**
+- `is_political_safe`: boolean
+- `is_map_safe`: boolean
+- `is_derivative_work`: boolean
+- `no_copyright_violation`: boolean
 
-### Dashboard (`/manager`)
-- Xem thống kê:
-  - Jobs đang chờ duyệt
-  - Jobs đã tạo
-  - Tổng tiền đã approve
-
-### Tạo Việc Mới (`/manager/create`)
-1. Nhập tiêu đề công việc
-2. Dán URL tài liệu gốc (để CTV xem)
-3. Nhập:
-   - Số từ cần dịch
-   - Thời lượng video (phút)
-4. Chọn độ phức tạp (Dễ/TB/Khó/Pro)
-5. Check "Yêu cầu quay lại" nếu cần
-6. Chọn các công cụ AI trong tài liệu
-7. Thêm ghi chú cho CTV (nếu có)
-8. Xem preview giá → Click "Tạo công việc"
-
-### Duyệt Bài (`/manager/review`)
-1. Xem danh sách submissions đang chờ
-2. Click vào submission để review
-3. Xem video đã nộp
-4. **Bắt buộc check 4 safety checkboxes**
-5. Chọn:
-   - ✅ **Approve**: Duyệt và thanh toán cho CTV
-   - ❌ **Reject**: Yêu cầu sửa + ghi lý do
+**Decision:**
+- `action`: approve | reject
+- `rejection_reason`: String (nếu reject)
 
 ---
 
-## 🎯 Luồng Task: CTV (Cộng tác viên)
+## 4. Quy ước Kỹ thuật (Technical Conventions)
 
-### Đăng ký lần đầu
-1. Truy cập `/register`
-2. Nhập họ tên, email, password
-3. Được redirect đến `/agreement`
-4. **Đọc và check 4 điều khoản bắt buộc:**
-   - Điều khoản sử dụng
-   - Quy tắc ứng xử  
-   - Chính sách bản quyền
-   - Miễn trừ trách nhiệm
-5. Click "Đồng ý và Tiếp tục"
+### 4.1 Database Tables
 
-### Xem Việc Available (`/jobs`)
-1. Xem danh sách jobs đang có
-2. Mỗi job hiển thị:
-   - Tiêu đề
-   - Số từ, thời lượng
-   - Độ phức tạp
-   - Thù lao
-   - Link "Xem tài liệu gốc"
-3. Click **"Nhận việc"** để grab
+| Table | Mô tả |
+|-------|-------|
+| `profiles` | Thông tin user (extends auth.users) |
+| `jobs` | Công việc |
+| `submissions` | Bài nộp của CTV |
+| `rank_limits` | Giới hạn theo rank |
+| `pricing_config` | Cấu hình giá |
 
-### Việc Của Tôi (`/jobs/my-jobs`)
-1. Xem các jobs đang làm:
-   - **Đang thực hiện**: Có countdown timer
-   - **Đã nộp**: Đang chờ Manager duyệt
-   - **Bị reject**: Cần sửa và nộp lại
-   - **Đã duyệt**: Hoàn thành
-
-### Nộp Bài (`/jobs/submit/[id]`)
-1. Mở từ "Việc của tôi" hoặc link trực tiếp
-2. Nhập URL video đã làm
-3. Nhập link Google Drive (tùy chọn)
-4. Thêm ghi chú (tùy chọn)
-5. **Check 2 xác nhận bắt buộc:**
-   - ✅ Đây là tác phẩm phái sinh
-   - ✅ Không vi phạm bản quyền
-6. Click "Nộp bài"
-
-### Trả Việc (Nếu không làm được)
-1. Vào "Việc của tôi"
-2. Click "Trả việc" trên job đang làm
-3. Xác nhận (sẽ bị trừ 2 điểm credit)
-
----
-
-## 📁 Cấu Trúc Thư Mục
+### 4.2 Job Status Flow
 
 ```
-sangtaophaisinh/
-├── frontend/                 # Next.js application
-│   ├── src/
-│   │   ├── app/             # Pages & Routes
-│   │   │   ├── (auth)/      # Login, Register, Agreement
-│   │   │   └── (dashboard)/ # Jobs, Manager, Admin
-│   │   ├── components/      # Reusable components
-│   │   ├── lib/             # Utilities, Supabase client
-│   │   └── types/           # TypeScript definitions
-│   └── package.json
-│
-├── supabase/
-│   └── migrations/          # SQL migration files
-│       ├── 001_initial_schema.sql
-│       ├── 002_rls_policies.sql
-│       ├── 003_lock_job_function.sql
-│       └── 004_cron_timeout.sql
-│
-├── backend/                 # Python services (reference)
-│   └── services/
-│       └── pricing.py
-│
-├── schemas/                 # JSON schemas
-├── DEPLOYMENT.md           # Hướng dẫn deploy
-└── README.md               # File này
+available → locked → submitted → approved/rejected
+                 ↓
+           (timeout) → available
+```
+
+### 4.3 RPC Functions
+
+| Function | Mục đích |
+|----------|----------|
+| `lock_job(p_job_id)` | CTV grab job, set deadline |
+| `release_job(p_job_id)` | CTV trả job, trừ điểm |
+| `verify_ctv(p_ctv_id, p_notes)` | Manager xác minh CTV |
+
+### 4.4 File Naming
+
+- Pages: `page.tsx`
+- Components: `kebab-case.tsx`
+- Types: `camelCase` in `database.ts`
+- SQL: `NNN_description.sql`
+
+### 4.5 Environment Variables
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 ```
 
 ---
 
-## 🚀 Hướng Dẫn Cài Đặt
+## 5. Nhật ký nâng cấp (Roadmap & Changelog)
 
-### Development
-```bash
-cd frontend
-npm install
-cp .env.example .env.local  # Thêm Supabase keys
-npm run dev
-```
+### Version 1.0 (2024-12-31) ✅
 
-### Production
-Xem chi tiết trong [DEPLOYMENT.md](./DEPLOYMENT.md)
+**Core Features:**
+- [x] Authentication + Agreement flow
+- [x] CTV: Xem jobs, grab, submit, release
+- [x] Manager: Tạo job, review, approve/reject
+- [x] Admin: Dashboard, users, config
+- [x] Pricing tự động
+- [x] Rank system với credit score
+- [x] Safety checkboxes
+- [x] Countdown timer
+
+### Version 2.0 (In Progress) 🔄
+
+**New Features:**
+- [x] CTV Profile với SĐT, Zalo
+- [x] Xác minh CTV bởi Manager
+- [x] Job details trong MyJobCard
+- [ ] Notification qua email/Zalo
+
+**Pending:**
+- [ ] Thanh toán tự động (bank/momo)
+- [ ] CTV wallet & rút tiền
+- [ ] Analytics dashboard nâng cao
+- [ ] Mobile responsive cải thiện
+
+### Future (V3.0+)
+
+- Multi-language support
+- API public cho tích hợp
+- AI-assisted translation review
+- Marketplace mở rộng
 
 ---
 
-## 📋 Version History
+## Quick Links
 
-### Version 1.0 (2024-12-31)
-- ✅ Hệ thống authentication với agreement flow
-- ✅ CTV: Xem jobs, grab jobs, submit, release
-- ✅ Manager: Tạo job, review, approve/reject
-- ✅ Admin: Dashboard, user management, config
-- ✅ Pricing tự động theo word count + video duration
-- ✅ Rank system với credit score
-- ✅ Safety checkboxes bắt buộc
-- ✅ Realtime notifications
-- ✅ Countdown timer cho deadline
-
----
-
-## 📞 Liên Hệ
-
-Phát triển bởi: [Tên của bạn]  
-Email: [Email của bạn]
+| Trang | URL | Role |
+|-------|-----|------|
+| Đăng nhập | `/login` | All |
+| Đăng ký | `/register` | All |
+| Việc làm | `/jobs` | CTV |
+| Việc của tôi | `/jobs/my-jobs` | CTV |
+| Hồ sơ | `/profile` | CTV |
+| Manager Dashboard | `/manager` | Manager |
+| Tạo việc | `/manager/create` | Manager |
+| Duyệt bài | `/manager/review` | Manager |
+| Xác minh CTV | `/manager/verify` | Manager |
+| Admin Dashboard | `/admin` | Admin |
+| Quản lý users | `/admin/users` | Admin |
+| Cấu hình | `/admin/config` | Admin |
 
 ---
 
