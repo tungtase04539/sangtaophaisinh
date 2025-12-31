@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Clock, FileText, Video, Cpu, Zap } from 'lucide-react'
+import { Clock, FileText, Video, Cpu, Zap, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
@@ -84,6 +84,19 @@ export function JobCard({ job, onLock, showClaimButton = true }: JobCardProps) {
                         <Cpu className="h-4 w-4 text-emerald-500" />
                         <span className="truncate">{job.ai_metadata.ai_tools_used.join(', ')}</span>
                     </div>
+                )}
+
+                {/* Source URL */}
+                {job.source_url && (
+                    <a
+                        href={job.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                        <ExternalLink className="h-4 w-4" />
+                        <span className="truncate">Xem video gốc</span>
+                    </a>
                 )}
 
                 {/* Price Display */}

@@ -113,3 +113,16 @@ WHERE id = 'user-id-here';
 
 ### Realtime không hoạt động
 - Kiểm tra Replication settings trong Supabase
+
+---
+
+## 🚨 Trước khi Go Production
+
+> **QUAN TRỌNG**: Nhớ làm những việc sau trước khi public cho users thật!
+
+- [ ] **Bật lại Email Confirmation** (Authentication → Providers → Email → Enable "Confirm email")
+- [ ] Cấu hình SMTP cho email (Authentication → SMTP Settings)
+- [ ] Thêm custom domain cho Vercel
+- [ ] Bật RLS cho tất cả tables
+- [ ] Review security policies
+- [ ] Backup database
