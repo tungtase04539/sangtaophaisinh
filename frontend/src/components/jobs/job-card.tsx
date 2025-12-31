@@ -95,7 +95,7 @@ export function JobCard({ job, onLock, showClaimButton = true }: JobCardProps) {
                         className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
                     >
                         <ExternalLink className="h-4 w-4" />
-                        <span className="truncate">Xem video gốc</span>
+                        <span className="truncate">Xem tài liệu gốc</span>
                     </a>
                 )}
 

@@ -217,7 +217,7 @@ export default function CreateJobPage() {
 
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                                        URL nguồn (Video gốc)
+                                        URL tài liệu gốc
                                     </label>
                                     <input
                                         type="url"
@@ -315,9 +315,9 @@ export default function CreateJobPage() {
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
                                     <Cpu className="h-5 w-5 text-emerald-500" />
-                                    Công cụ AI trong video
+                                    Công cụ AI trong tài liệu
                                 </CardTitle>
-                                <CardDescription>Chọn các công cụ AI được sử dụng/giới thiệu trong video</CardDescription>
+                                <CardDescription>Chọn các công cụ AI được sử dụng/giới thiệu trong tài liệu gốc</CardDescription>
                             </CardHeader>
                             <CardContent>
                                 <div className="flex flex-wrap gap-2">
