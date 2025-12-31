@@ -1,0 +1,220 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://sangtaophaisinh.com/schemas/review-form.json",
+  "title": "Job Review Form Schema",
+  "description": "Schema for Manager review form with mandatory safety checkboxes",
+  "type": "object",
+  "required": [
+    "job_id",
+    "submission_id",
+    "safety_checks",
+    "quality_assessment",
+    "decision"
+  ],
+  "properties": {
+    "job_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID of the job being reviewed"
+    },
+    "submission_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID of the submission being reviewed"
+    },
+
+    "safety_checks": {
+      "type": "object",
+      "description": "MANDATORY safety verification checkboxes - ALL must be true to approve",
+      "required": [
+        "is_political_safe",
+        "is_map_safe",
+        "is_derivative_work",
+        "no_copyright_violation"
+      ],
+      "properties": {
+        "is_political_safe": {
+          "type": "boolean",
+          "description": "Content contains NO political content that could cause issues",
+          "x-blocks-approval": true,
+          "x-ui-label": "I confirm this content contains NO politically sensitive material",
+          "x-warning-text": "Political content may result in legal issues. Review carefully."
+        },
+        "is_map_safe": {
+          "type": "boolean",
+          "description": "All maps shown are legally compliant (especially China maps with correct borders)",
+          "x-blocks-approval": true,
+          "x-ui-label": "I confirm all maps shown are legally compliant for Vietnam",
+          "x-warning-text": "Incorrect map borders (especially China-related) may cause legal problems."
+        },
+        "is_derivative_work": {
+          "type": "boolean",
+          "description": "CTV created derivative work (re-recorded screen) not just subtitles",
+          "x-blocks-approval": true,
+          "x-ui-label": "I confirm this is a derivative work (re-recorded) not just subtitles on original video",
+          "x-warning-text": "Simply adding subtitles to original videos violates copyright."
+        },
+        "no_copyright_violation": {
+          "type": "boolean",
+          "description": "No obvious copyright violations detected",
+          "x-blocks-approval": true,
+          "x-ui-label": "I confirm no obvious copyright violations are present"
+        },
+        "safety_notes": {
+          "type": "string",
+          "description": "Optional notes about safety concerns",
+          "maxLength": 1000
+        }
+      }
+    },
+
+    "quality_assessment": {
+      "type": "object",
+      "description": "Quality rating for the submission",
+      "required": ["translation_accuracy", "video_quality", "overall_rating"],
+      "properties": {
+        "translation_accuracy": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "1-5 rating for translation accuracy"
+        },
+        "video_quality": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "1-5 rating for video/audio quality"
+        },
+        "voice_clarity": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "1-5 rating for voice-over clarity (optional)"
+        },
+        "technical_accuracy": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "1-5 rating for technical content accuracy (for AI tutorials)"
+        },
+        "overall_rating": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5,
+          "description": "Overall quality rating"
+        }
+      }
+    },
+
+    "decision": {
+      "type": "object",
+      "description": "Review decision and outcome",
+      "required": ["action"],
+      "properties": {
+        "action": {
+          "type": "string",
+          "enum": ["approve", "reject", "request_revision", "dispute"],
+          "description": "Review action to take"
+        },
+        "rejection_reason": {
+          "type": "string",
+          "description": "Required if action is 'reject'",
+          "maxLength": 2000
+        },
+        "revision_instructions": {
+          "type": "string",
+          "description": "Required if action is 'request_revision'",
+          "maxLength": 2000
+        },
+        "dispute_reason": {
+          "type": "string",
+          "description": "Required if action is 'dispute' - escalates to admin",
+          "maxLength": 2000
+        },
+        "public_feedback": {
+          "type": "string",
+          "description": "Feedback visible to CTV",
+          "maxLength": 1000
+        },
+        "internal_notes": {
+          "type": "string",
+          "description": "Notes only visible to managers/admins",
+          "maxLength": 1000
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "action": { "const": "reject" } }
+          },
+          "then": {
+            "required": ["rejection_reason"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "action": { "const": "request_revision" } }
+          },
+          "then": {
+            "required": ["revision_instructions"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "action": { "const": "dispute" } }
+          },
+          "then": {
+            "required": ["dispute_reason"]
+          }
+        }
+      ]
+    },
+
+    "payout": {
+      "type": "object",
+      "description": "Payout information (only when approving)",
+      "properties": {
+        "approved_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Amount to pay CTV (may differ from job price if penalties/bonuses apply)"
+        },
+        "bonus_amount": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Bonus for exceptional work"
+        },
+        "deduction_amount": {
+          "type": "number",
+          "minimum": 0,
+          "default": 0,
+          "description": "Deduction for minor issues"
+        },
+        "deduction_reason": {
+          "type": "string",
+          "description": "Reason for any deduction"
+        }
+      }
+    },
+
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Timestamp of review (auto-filled)"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "format": "uuid",
+      "description": "UUID of reviewing manager (auto-filled)"
+    }
+  },
+
+  "x-ui-config": {
+    "approval_blocked_message": "Cannot approve: All safety checks must be verified first",
+    "safety_section_title": "⚠️ MANDATORY SAFETY VERIFICATION",
+    "safety_section_description": "You MUST verify ALL items below before approving. Failure to properly verify may result in legal issues.",
+    "show_warning_banner": true,
+    "warning_banner_text": "IMPORTANT: Content from China must be carefully reviewed for political sensitivity and map accuracy."
+  }
+}

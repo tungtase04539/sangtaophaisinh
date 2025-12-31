@@ -1,0 +1,103 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://sangtaophaisinh.com/schemas/ctv-signup-agreement.json",
+    "title": "CTV Click-wrap Agreement Schema",
+    "description": "Legal agreement that CTVs must accept before claiming jobs (Liability Waiver)",
+    "type": "object",
+    "required": [
+        "user_id",
+        "agreements",
+        "signature",
+        "agreed_at"
+    ],
+    "properties": {
+        "user_id": {
+            "type": "string",
+            "format": "uuid"
+        },
+        "agreements": {
+            "type": "object",
+            "description": "All agreements must be true to proceed",
+            "required": [
+                "terms_of_service",
+                "liability_waiver",
+                "derivative_work_requirement",
+                "content_guidelines"
+            ],
+            "properties": {
+                "terms_of_service": {
+                    "type": "boolean",
+                    "description": "Agreed to general terms of service",
+                    "x-required-text": "I agree to the Terms of Service and Privacy Policy",
+                    "x-link": "/legal/terms"
+                },
+                "liability_waiver": {
+                    "type": "boolean",
+                    "description": "Waiver of liability for content issues",
+                    "x-required-text": "I understand that I am solely responsible for ensuring my submitted content does not violate any laws or regulations. The platform is not liable for any legal issues arising from my submissions.",
+                    "x-link": "/legal/liability-waiver"
+                },
+                "derivative_work_requirement": {
+                    "type": "boolean",
+                    "description": "Understanding of derivative work requirement",
+                    "x-required-text": "I understand that I MUST create derivative works (re-record screen, create new voiceover) and NOT simply add subtitles to original videos. Failure to comply may result in account termination and legal action."
+                },
+                "content_guidelines": {
+                    "type": "boolean",
+                    "description": "Understanding of content review guidelines",
+                    "x-required-text": "I understand that all content will be reviewed for political sensitivity and map accuracy. I will not submit content that contains politically sensitive material or incorrect map representations."
+                },
+                "payment_terms": {
+                    "type": "boolean",
+                    "description": "Understanding of payment terms",
+                    "x-required-text": "I understand the payment schedule and that payments are made after manager approval. I accept the pricing structure and deadline policies."
+                }
+            }
+        },
+        "signature": {
+            "type": "object",
+            "required": [
+                "full_name",
+                "id_number_last4"
+            ],
+            "properties": {
+                "full_name": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 100,
+                    "description": "Full legal name"
+                },
+                "id_number_last4": {
+                    "type": "string",
+                    "pattern": "^[0-9]{4}$",
+                    "description": "Last 4 digits of government ID for verification"
+                },
+                "ip_address": {
+                    "type": "string",
+                    "description": "IP address at time of signing (auto-captured)"
+                },
+                "user_agent": {
+                    "type": "string",
+                    "description": "Browser user agent (auto-captured)"
+                }
+            }
+        },
+        "agreed_at": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Timestamp of agreement"
+        },
+        "agreement_version": {
+            "type": "string",
+            "default": "1.0.0",
+            "description": "Version of the agreement accepted"
+        }
+    },
+    "x-ui-config": {
+        "title": "Collaborator Agreement",
+        "subtitle": "Please read and accept all terms before proceeding",
+        "submit_button_text": "I Agree and Accept",
+        "cancel_button_text": "Cancel",
+        "show_full_text_links": true
+    }
+}
