@@ -26,6 +26,7 @@ export default function ProfilePage() {
     const [loading, setLoading] = useState(true)
     const [saving, setSaving] = useState(false)
     const [profile, setProfile] = useState<Profile | null>(null)
+    const [userEmail, setUserEmail] = useState('')
     const [formData, setFormData] = useState({
         full_name: '',
         phone: '',
@@ -43,6 +44,8 @@ export default function ProfilePage() {
                 router.push('/login')
                 return
             }
+
+            setUserEmail(user.email || '')
 
             const { data } = await supabase
                 .from('profiles')
@@ -257,7 +260,7 @@ export default function ProfilePage() {
                     <CardContent className="space-y-3 text-sm">
                         <div className="flex justify-between">
                             <span className="text-gray-500">Email</span>
-                            <span className="font-medium">{profile.id}</span>
+                            <span className="font-medium">{userEmail}</span>
                         </div>
                         <div className="flex justify-between">
                             <span className="text-gray-500">Vai trò</span>
