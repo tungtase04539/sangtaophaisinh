@@ -13,6 +13,7 @@ export interface Profile {
     full_name: string | null
     avatar_url: string | null
     phone: string | null
+    zalo?: string | null
     role: UserRole
     rank: UserRank
     credit_score: number
@@ -22,6 +23,10 @@ export interface Profile {
     terms_agreed_at: string | null
     liability_waiver_signed: boolean
     waiver_signed_at: string | null
+    is_verified?: boolean
+    verified_by?: string | null
+    verified_at?: string | null
+    verification_notes?: string | null
     created_at: string
     updated_at: string
 }

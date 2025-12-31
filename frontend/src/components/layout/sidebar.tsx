@@ -11,7 +11,8 @@ import {
     LayoutDashboard,
     FileCheck,
     Users,
-    Cog
+    Cog,
+    UserCheck
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
@@ -42,6 +43,7 @@ export function Sidebar({ role, userName, userId }: SidebarProps) {
         { href: '/manager', label: 'Dashboard', icon: LayoutDashboard },
         { href: '/manager/create', label: 'Tạo việc mới', icon: Briefcase },
         { href: '/manager/review', label: 'Duyệt bài', icon: FileCheck },
+        { href: '/manager/verify', label: 'Xác minh CTV', icon: UserCheck },
         { href: '/profile', label: 'Hồ sơ', icon: User },
     ]
 
@@ -50,6 +52,7 @@ export function Sidebar({ role, userName, userId }: SidebarProps) {
         { href: '/admin/users', label: 'Người dùng', icon: Users },
         { href: '/admin/config', label: 'Cấu hình', icon: Cog },
         { href: '/manager/review', label: 'Duyệt bài', icon: FileCheck },
+        { href: '/manager/verify', label: 'Xác minh CTV', icon: UserCheck },
     ]
 
     const links = role === 'admin' ? adminLinks : role === 'manager' ? managerLinks : ctvLinks
