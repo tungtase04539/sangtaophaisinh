@@ -38,13 +38,14 @@ export interface PricingData {
 }
 
 export interface AIMetadata {
-    prompt_source: string
-    prompt_translated: string
-    model_links: string[]
-    hardware_requirements: string
+    prompt_source?: string
+    prompt_translated?: string
+    model_links?: string[]
+    hardware_requirements?: string
     ai_tools_used: string[]
-    tutorial_type: string
-    difficulty_level: string
+    tutorial_type?: string
+    difficulty_level?: string
+    notes?: string
 }
 
 export interface Job {

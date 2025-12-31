@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Clock, AlertTriangle, CheckCircle2, XCircle, Send, FileText } from 'lucide-react'
+import { Clock, AlertTriangle, CheckCircle2, XCircle, Send, FileText, Video, Cpu, Zap, ExternalLink } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
@@ -104,6 +104,66 @@ export function MyJobCard({ job, submission }: MyJobCardProps) {
             </CardHeader>
 
             <CardContent className="space-y-4">
+                {/* Job Details */}
+                <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <FileText className="h-4 w-4 text-purple-500" />
+                        <span>{job.word_count.toLocaleString()} từ</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <Video className="h-4 w-4 text-blue-500" />
+                        <span>{Math.round(job.video_duration_seconds / 60)} phút</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-gray-600">
+                        <Cpu className="h-4 w-4 text-emerald-500" />
+                        <span>
+                            {job.complexity === 'easy' && 'Dễ'}
+                            {job.complexity === 'medium' && 'Trung bình'}
+                            {job.complexity === 'hard' && 'Khó'}
+                            {job.complexity === 'expert' && 'Chuyên gia'}
+                        </span>
+                    </div>
+                    {job.is_re_record_required && (
+                        <div className="flex items-center gap-2 text-amber-600">
+                            <Zap className="h-4 w-4" />
+                            <span>Cần quay lại</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Source URL */}
+                {job.source_url && (
+                    <a
+                        href={job.source_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 hover:underline"
+                    >
+                        <ExternalLink className="h-4 w-4" />
+                        <span>Xem tài liệu gốc</span>
+                    </a>
+                )}
+
+                {/* AI Tools */}
+                {job.ai_metadata?.ai_tools_used?.length > 0 && (
+                    <div className="flex flex-wrap gap-1">
+                        {job.ai_metadata.ai_tools_used.map((tool: string) => (
+                            <span key={tool} className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-xs rounded-full">
+                                {tool}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                {/* Notes from Manager */}
+                {job.ai_metadata?.notes && (
+                    <div className="text-sm bg-amber-50 border border-amber-200 p-2 rounded-lg">
+                        <p className="text-amber-800">
+                            <strong>Ghi chú:</strong> {job.ai_metadata.notes}
+                        </p>
+                    </div>
+                )}
+
                 {/* Deadline Timer */}
                 {job.status === 'locked' && job.deadline && (
                     <div className={`flex items-center justify-center gap-2 p-3 rounded-lg ${isOverdue ? 'bg-red-100 text-red-700' : 'bg-purple-50 text-purple-700'
