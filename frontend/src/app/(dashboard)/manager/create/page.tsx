@@ -15,7 +15,10 @@ import {
     Clock,
     Cpu,
     AlertCircle,
-    CheckCircle2
+    CheckCircle2,
+    Search,
+    Image,
+    Loader2
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -33,6 +36,7 @@ interface PricingPreview {
 export default function CreateJobPage() {
     const router = useRouter()
     const [loading, setLoading] = useState(false)
+    const [isAnalyzing, setIsAnalyzing] = useState(false)
     const [success, setSuccess] = useState(false)
     const supabase = createClient()
 
@@ -104,6 +108,37 @@ export default function CreateJobPage() {
                 ? prev.ai_tools_used.filter(t => t !== tool)
                 : [...prev.ai_tools_used, tool]
         }))
+    }
+
+    const handleAnalyze = async () => {
+        if (!formData.source_url) return
+
+        setIsAnalyzing(true)
+        try {
+            const res = await fetch('/api/analyze-url', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url: formData.source_url })
+            })
+
+            const data = await res.json()
+            if (data.success) {
+                const { wordCount, title } = data.data
+                setFormData(prev => ({
+                    ...prev,
+                    word_count: wordCount,
+                    title: prev.title || title || ''
+                }))
+                alert(`Phân tích thành công!\nSố từ: ${wordCount}\nẢnh: ${data.data.images}\nVideo: ${data.data.videos}`)
+            } else {
+                throw new Error(data.error)
+            }
+        } catch (error: any) {
+            console.error('Analysis error:', error)
+            alert('Không thể phân tích URL này: ' + error.message)
+        } finally {
+            setIsAnalyzing(false)
+        }
     }
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -219,13 +254,34 @@ export default function CreateJobPage() {
                                     <label className="block text-sm font-medium text-gray-700 mb-1">
                                         URL tài liệu gốc
                                     </label>
-                                    <input
-                                        type="url"
-                                        value={formData.source_url}
-                                        onChange={(e) => updateField('source_url', e.target.value)}
-                                        className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
-                                        placeholder="https://..."
-                                    />
+                                    <div className="flex gap-2">
+                                        <input
+                                            type="url"
+                                            value={formData.source_url}
+                                            onChange={(e) => updateField('source_url', e.target.value)}
+                                            className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-purple-500"
+                                            placeholder="https://..."
+                                        />
+                                        <Button
+                                            type="button"
+                                            variant="outline"
+                                            onClick={handleAnalyze}
+                                            disabled={isAnalyzing || !formData.source_url}
+                                            className="whitespace-nowrap"
+                                        >
+                                            {isAnalyzing ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <Search className="h-4 w-4 mr-2" />
+                                                    Phân tích
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Hệ thống sẽ tự động đếm số từ và trích xuất thông tin
+                                    </p>
                                 </div>
                             </CardContent>
                         </Card>

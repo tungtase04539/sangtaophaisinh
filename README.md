@@ -222,6 +222,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJ...
 - [x] CTV Profile với SĐT, Zalo
 - [x] Xác minh CTV bởi Manager
 - [x] Job details trong MyJobCard
+- [x] Tự động phân tích nội dung từ URL (Puppeteer Scraper)
 - [ ] Notification qua email/Zalo
 
 **Pending:**
