@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import puppeteer from 'puppeteer'
+import puppeteer from 'puppeteer-core'
+import chromium from '@sparticuz/chromium'
+
+// Optional: allow local development to use local chrome if needed
+const isLocal = process.env.NODE_ENV === 'development'
 
 export async function POST(req: NextRequest) {
     try {
@@ -10,8 +14,12 @@ export async function POST(req: NextRequest) {
         }
 
         const browser = await puppeteer.launch({
-            headless: true,
-            args: ['--no-sandbox', '--disable-setuid-sandbox'],
+            args: isLocal ? puppeteer.defaultArgs() : chromium.args,
+            defaultViewport: chromium.defaultViewport,
+            executablePath: isLocal
+                ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' // Local path for Windows
+                : await chromium.executablePath(),
+            headless: chromium.headless,
         })
 
         const page = await browser.newPage()
