@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
             executablePath: isLocal
                 ? 'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe' // Local path for Windows
                 : await chromium.executablePath(),
-            headless: chromium.headless,
+            headless: chromium.headless as any,
         })
 
         const page = await browser.newPage()
